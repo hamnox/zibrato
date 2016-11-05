@@ -1,7 +1,8 @@
-import zmq
+from future.utils import listitems
 from collections import namedtuple
 import argparse
 from fuzzywuzzy import process
+import zmq
 
 __version_info__ = (0, 1, 8)
 __version__ = ".".join([str(x) for x in __version_info__])
@@ -15,7 +16,7 @@ Measurement = namedtuple('Measurement',
 class Backend(object):
 
     def __init__(self, **kwargs):
-        for key, value in kwargs.items():
+        for key, value in listitems(kwargs):
             setattr(self, key, value)
         # ugly preservation of `default if kwarg is None else kwarg` semantic
         self.host = getattr(self, 'host', None) or '127.0.0.1'
@@ -26,7 +27,7 @@ class Backend(object):
         self.queue = {}
 
     def subscribe(self, sub):
-        self.socket.setsockopt(zmq.SUBSCRIBE, sub)
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, sub)
 
     def receive_one(self):
         self.socket.RCVTIMEO = 100
@@ -66,7 +67,7 @@ class Broker(object):
         self.context = kwargs.get('context') or zmq.Context.instance()
         self.frontend = self.context.socket(zmq.SUB)
         self.frontend.bind('tcp://%s:%d' % (self.host, self.port))
-        self.frontend.setsockopt(zmq.SUBSCRIBE, '')
+        self.frontend.setsockopt_string(zmq.SUBSCRIBE, '')
         self.backend = self.context.socket(zmq.PUB)
         self.backend.bind('tcp://%s:%d' % (self.host, self.port + 1))
         self.backend.setsockopt(zmq.LINGER, 0)

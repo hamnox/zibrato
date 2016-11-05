@@ -1,7 +1,10 @@
-from time import time
+from builtins import str
 import re
-from collections import namedtuple
 import argparse
+from time import time
+from collections import namedtuple
+
+from future.utils import iteritems
 import simplejson as json
 import requests
 from fuzzywuzzy import process
@@ -24,11 +27,11 @@ class Librato(Backend):
         r = requests.head(
             API,
             auth=(self.username, self.apitoken),
-            headers = {'User-Agent': USER_AGENT})
+            headers={'User-Agent': USER_AGENT})
         return r.status_code
 
     def parse(self, message):
-        print message
+        print(message)
         level, mtype, name, value, timestamp, source = message.split('|')
         if mtype == 'Timer':
             mtype = 'gauges'
@@ -45,7 +48,7 @@ class Librato(Backend):
             name = item.source + '|' + item.name
             counter[name] = counter.get(name, 0) + item.value
         del self.queue['counters']
-        for k, v in counter.iteritems():
+        for k, v in iteritems(counter):
             source, name = k.split('|')
             self.post('|'.join(('', 'gauges', name, str(v),
                                 timestamp, source)))

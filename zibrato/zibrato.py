@@ -1,8 +1,8 @@
-import zmq
 from time import time
 from datetime import datetime
 from functools import wraps
 from contextlib import contextmanager
+import zmq
 
 
 class Zibrato(object):
@@ -38,7 +38,7 @@ class Zibrato(object):
         return message
 
     def send(self, **kwargs):
-        self.socket.send(self.pack(**kwargs))
+        self.socket.send_string(self.pack(**kwargs))
 
     def gauge(self, **kwargs):
         self.send(**kwargs)
